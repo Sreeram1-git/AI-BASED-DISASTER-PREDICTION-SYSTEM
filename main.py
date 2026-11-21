@@ -6,6 +6,7 @@ from visualize_weather import visualize_weather
 from weather_moniter import weather_monitor
 from disaster_risk import (flood_risk,landslide_risk,cyclone_risk,display_risk_report)
 from disaster_alert import send_disaster_alert
+from weather_history import save_weather_history
 
 def main():
 
@@ -65,7 +66,8 @@ def main():
             if weather:
                 risk = check_weather_risk(weather)
                 save_risk_history(weather, risk)
-
+                save_wether_history(weather)
+                
         elif choice == "5":
             visualize_risk()
 

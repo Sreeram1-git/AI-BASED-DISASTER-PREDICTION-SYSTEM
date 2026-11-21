@@ -3,6 +3,8 @@ import time
 from live_weather import get_live_weather
 from risk_analysis import check_weather_risk
 from risk_history import save_risk_history
+from weather_history import save_weather_history
+
 
 
 def weather_monitor():

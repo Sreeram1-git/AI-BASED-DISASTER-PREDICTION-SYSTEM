@@ -1,10 +1,7 @@
-
 import requests
 
-# ==========================================
-# FUNCTION 1: GET LOCATION COORDINATES
-# ==========================================
 
+# GET LOCATION COORDINATES
 def get_location_coordinates(location):
 
     url = "https://geocoding-api.open-meteo.com/v1/search"
@@ -16,102 +13,36 @@ def get_location_coordinates(location):
         "format": "json"
     }
 
-    try:
-        response = requests.get(
-            url,
-            params=params,
-            timeout=15
-        )
+    response = requests.get(url, params=params, timeout=15)
+    response.raise_for_status()
 
-        response.raise_for_status()
+    data = response.json()
 
-        data = response.json()
+    if not data.get("results"):
+        raise ValueError("Location not found")
 
-        if not data.get("results"):
-            print("\nLocation not found. Try another city.")
-            return None
+    # Select the first matching result for now
+    selected = data["results"][0]
 
-        results = data["results"]
+    return {
+        "latitude": selected["latitude"],
+        "longitude": selected["longitude"],
+        "city": selected.get("name", "Unknown"),
+        "country": selected.get("country", "Unknown")
+    }
 
-        # Display matching locations
-        print("\nMatching Locations:")
 
-        for i, place in enumerate(results, start=1):
+# GET LIVE WEATHER
+def get_live_weather(location):
 
-            city = place.get("name", "Unknown")
-            country = place.get("country", "Unknown")
-            state = place.get("admin1", "")
+    if not location or not location.strip():
+        raise ValueError("Please enter a location")
 
-            print(f"{i}. {city}, {state}, {country}")
-
-        # Select location
-        if len(results) > 1:
-
-            choice = input(
-                "\nSelect location number: "
-            ).strip()
-
-            if not choice.isdigit():
-                print("Invalid selection.")
-                return None
-
-            choice = int(choice)
-
-            if choice < 1 or choice > len(results):
-                print("Invalid selection.")
-                return None
-
-            selected = results[choice - 1]
-
-        else:
-            selected = results[0]
-
-        return {
-            "latitude": selected["latitude"],
-            "longitude": selected["longitude"],
-            "city": selected.get("name", "Unknown"),
-            "country": selected.get("country", "Unknown")
-        }
-
-    except requests.exceptions.RequestException as e:
-
-        print("\nLocation API error:", e)
-        return None
-
-# ==========================================
-# FUNCTION 2: GET LIVE WEATHER
-# ==========================================
-
-def get_live_weather(location=None):
-
-    print("\n===================================")
-    print("       WORLDWIDE WEATHER SYSTEM")
-    print("===================================")
-
-    # Ask location if not already provided
-    if location is None:
-
-        location = input(
-            "\nEnter city or location: "
-        ).strip()
-
-    if not location:
-        print("Please enter a location.")
-        return None
-
-    # Get coordinates
-    place = get_location_coordinates(location)
-
-    if place is None:
-        return None
+    # Get location details
+    place = get_location_coordinates(location.strip())
 
     latitude = place["latitude"]
     longitude = place["longitude"]
-
-    city = place["city"]
-    country = place["country"]
-
-    print(f"\nFetching weather for {city}, {country}...")
 
     # Weather API
     url = "https://api.open-meteo.com/v1/forecast"
@@ -119,100 +50,40 @@ def get_live_weather(location=None):
     params = {
         "latitude": latitude,
         "longitude": longitude,
-
         "current": [
             "temperature_2m",
             "relative_humidity_2m",
             "precipitation",
             "wind_speed_10m"
         ],
-
         "timezone": "auto"
     }
 
-    try:
+    response = requests.get(url, params=params, timeout=15)
+    response.raise_for_status()
 
-        response = requests.get(
-            url,
-            params=params,
-            timeout=15
-        )
+    data = response.json()
+    current = data["current"]
 
-        response.raise_for_status()
+    weather = {
+        "temperature": current["temperature_2m"],
+        "humidity": current["relative_humidity_2m"],
+        "rainfall": current["precipitation"],
+        "wind_speed": current["wind_speed_10m"],
 
-        data = response.json()
+        "location": place["city"],
+        "country": place["country"],
 
-        current = data["current"]
+        "latitude": latitude,
+        "longitude": longitude
+    }
 
-        # Extract weather information
-        temperature = current["temperature_2m"]
-        humidity = current["relative_humidity_2m"]
-        rainfall = current["precipitation"]
-        wind_speed = current["wind_speed_10m"]
+    return weather
 
-        # Create weather dictionary
-        # Both old and new keys are included
-        weather = {
 
-            # New keys
-            "temperature": temperature,
-            "humidity": humidity,
-            "rainfall": rainfall,
-            "wind_speed": wind_speed,
-
-            # Existing project compatibility
-            "temperature_2m": temperature,
-            "relative_humidity_2m": humidity,
-            "precipitation": rainfall,
-            "wind_speed_10m": wind_speed,
-
-            # Location details
-            "location": city,
-            "country": country,
-
-            # Coordinates
-            "latitude": latitude,
-            "longitude": longitude
-        }
-
-        # Display weather report
-        print("\n===================================")
-        print("          LIVE WEATHER REPORT")
-        print("===================================")
-
-        print(f"Location    : {city}, {country}")
-        print(f"Latitude    : {latitude}")
-        print(f"Longitude   : {longitude}")
-
-        print("-----------------------------------")
-
-        print(f"Temperature : {temperature} °C")
-        print(f"Humidity    : {humidity} %")
-        print(f"Rainfall    : {rainfall} mm")
-        print(f"Wind Speed  : {wind_speed} km/h")
-
-        print("===================================")
-
-        return weather
-
-    except requests.exceptions.RequestException as e:
-
-        print("\nWeather API error:", e)
-        return None
-
-    except (KeyError, ValueError, TypeError) as e:
-
-        print("\nUnable to process weather data:", e)
-        return None
-
-# ==========================================
-# TEST THE PROGRAM DIRECTLY
-# ==========================================
-
+# TEST
 if __name__ == "__main__":
 
-    weather = get_live_weather()
+    weather = get_live_weather("Kottayam")
 
-    if weather:
-
-        print("\nWeather data successfully received.")
+    print(weather)

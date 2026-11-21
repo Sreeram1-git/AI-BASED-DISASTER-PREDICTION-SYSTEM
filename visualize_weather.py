@@ -1,16 +1,21 @@
 import csv
 import matplotlib.pyplot as plt
 from datetime import datetime
-import os
+from pathlib import Path
 
+
+BASE_DIR = Path(__file__).resolve().parent
 
 def visualize_weather():
 
-    file_path = "data\\weather_history.csv"
+    file_path = BASE_DIR / "data" / "weather_history.csv"
+    print("Python is checking:", file_path)
+    print("File exists:", file_path.exists())
+    graph_folder = BASE_DIR / "static" / "graphs"
 
-    if not os.path.exists(file_path):
+    if not file_path.exists():
         print("Weather history file not found!")
-        return
+        return []
 
     dates = []
     temperatures = []
@@ -34,9 +39,9 @@ def visualize_weather():
 
     if not dates:
         print("No weather records available!")
-        return
+        return []
 
-    os.makedirs("graphs", exist_ok=True)
+    graph_folder.mkdir(parents=True, exist_ok=True)
 
     graph_data = [
         (temperatures, "Temperature History",
@@ -52,6 +57,8 @@ def visualize_weather():
          "Wind Speed (km/h)", "wind_speed_history.png")
     ]
 
+    graph_urls = []
+
     for values, title, ylabel, filename in graph_data:
 
         plt.figure(figsize=(10, 5))
@@ -66,12 +73,16 @@ def visualize_weather():
         plt.grid(True)
         plt.tight_layout()
 
-        plt.savefig("graphs/" + filename)
+        save_path = graph_folder / filename
+        plt.savefig(save_path)
 
-        print("Saved:", filename)
-
-        plt.show()
         plt.close()
+
+        graph_urls.append("/static/graphs/" + filename)
+
+        print("Saved:", save_path)
+
+    return graph_urls
 
 
 if __name__ == "__main__":

@@ -1,10 +1,5 @@
 
-# ==========================================
-# AI-BASED DISASTER RISK ASSESSMENT
-# Educational Weather Screening Prototype
-# ==========================================
 
-# FUNCTION 1: GET WEATHER VALUES
 
 def get_weather_values(weather):
 
@@ -30,7 +25,7 @@ def get_weather_values(weather):
 
     return temperature, humidity, rainfall, wind_speed
 
-# FUNCTION 2: DETERMINE RISK LEVEL
+
 
 def get_risk_level(score):
 
@@ -43,9 +38,6 @@ def get_risk_level(score):
     else:
         return "LOW"
 
-# ==========================================
-# 1. FLOOD RISK SCREENING
-# ==========================================
 
 def flood_risk(weather):
 
@@ -70,9 +62,6 @@ def flood_risk(weather):
         "risk": risk
     }
 
-# ==========================================
-# 2. LANDSLIDE RISK SCREENING
-# ==========================================
 
 def landslide_risk(weather):
 
@@ -96,11 +85,6 @@ def landslide_risk(weather):
         "score": score,
         "risk": risk
     }
-
-# ==========================================
-# 3. CYCLONE WIND INDICATOR
-# ==========================================
-
 def cyclone_risk(weather):
 
     _, _, _, wind_speed = get_weather_values(weather)
@@ -124,9 +108,6 @@ def cyclone_risk(weather):
         "risk": risk
     }
 
-# ==========================================
-# 4. DISPLAY DISASTER RISK REPORT
-# ==========================================
 
 def display_risk_report(result):
 
